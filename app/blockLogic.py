@@ -11,7 +11,18 @@ class BlockLogic(QObject):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._blocks = {}
+        self._blocks = {
+            # Example blocks for testing
+            0: SimpleBlockElement("Block 1", "blue"),
+            1: SimpleBlockElement("Block 2", "green", 1, 2),
+            2: SimpleBlockElement("Block 3", "red", 3, 1)
+        }
+
+    def toList(self):
+        """
+        Returns a list of all blocks.
+        """
+        return list(self._blocks.values())
 
     @Property(dict, constant=True)
     def blocks(self):

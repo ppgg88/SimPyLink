@@ -19,28 +19,33 @@ ApplicationWindow {
         id: blockContainer
         anchors.fill: parent
 
-        signal startConnection(int x, int y)
-        signal endConnection(int x, int y)
+        signal startConnection(var modelSource, int index);
+        signal endConnection(var modelOutput, int index);
 
         property var connections: []  // Liste des connexions
 
-        onStartConnection: {
-            console.log("Start connection at:", x, y);
-            // Stocker le point de départ temporaire
-            blockContainer.tempConnection = { startX: x, startY: y, endX: null, endY: null };
-        }
-
-        onEndConnection: {
-            console.log("End connection at:", x, y);
-            // Compléter la connexion et l'ajouter à la liste
+        function handleEndConnection(modelOutput, index) {
             if (blockContainer.tempConnection) {
-                blockContainer.tempConnection.endX = x;
-                blockContainer.tempConnection.endY = y;
+                blockContainer.tempConnection.output = modelOutput;
+                blockContainer.tempConnection.indexOutput = index;
                 blockContainer.connections.push(blockContainer.tempConnection);
                 blockContainer.tempConnection = null;
                 connectionCanvas.requestPaint();  // Redessiner les connexions
             }
         }
+
+
+        function handleStartConnection(modelSource, index) {
+            blockContainer.tempConnection = {
+                source: modelSource,
+                indexSource: index,
+                output: null,
+                indexOutput: null,
+            };
+        }
+
+        onStartConnection: blockContainer.handleStartConnection(arguments[0], arguments[1])
+        onEndConnection: blockContainer.handleEndConnection(arguments[0], arguments[1])
 
         property var tempConnection: null  // Connexion temporaire en cours
 
@@ -51,9 +56,9 @@ ApplicationWindow {
             Loader {
                 source: "elements/simpleBlockElement.qml"
                 onLoaded: {
-                    item.elementModel = modelData
-                    item.x = index * 120 
-                    item.y = 100
+                    item.x = index * 120
+                    item.y = 100 
+                    item.elementModel = modelData 
                 }
             }
         }
@@ -71,8 +76,8 @@ ApplicationWindow {
                 for (var i = 0; i < blockContainer.connections.length; i++) {
                     var connection = blockContainer.connections[i];
                     ctx.beginPath();
-                    ctx.moveTo(connection.startX, connection.startY);
-                    ctx.lineTo(connection.endX, connection.endY);
+                    ctx.moveTo(connection.source.x - 5, connection.source.y + connection.indexSource * 50 + 20 + (Math.max(connection.source.inputSize, connection.source.outputSize)-connection.source.inputSize)*25 + 5);
+                    ctx.lineTo(connection.output.x + connection.output.width - 25,  connection.output.y + connection.indexOutput * 50 + 20 + (Math.max(connection.output.inputSize, connection.output.outputSize)-connection.output.outputSize)*25 + 5);
                     ctx.strokeStyle = "black";
                     ctx.lineWidth = 2;
                     ctx.stroke();

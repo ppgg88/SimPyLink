@@ -12,6 +12,9 @@ class SimpleBlockElement(QObject):
     inputSizeChanged = Signal()
     outputSizeChanged = Signal()
     onDrag = Signal(float, float)
+    positionChanged = Signal(float, float)
+    onWidthChanged = Signal(float)
+    onHeightChanged = Signal(float)
 
     lastBlockId = 0
 
@@ -21,8 +24,12 @@ class SimpleBlockElement(QObject):
         self._color = color
         self._inputSize = inputSize
         self._outputSize = outputSize
-        SimpleBlockElement.lastBlockId += 1
         self._blockId = SimpleBlockElement.lastBlockId
+        self._x = 0.0
+        self._y = 0.0
+        self._width = 100.0
+        self._height = 50.0
+        SimpleBlockElement.lastBlockId += 1
 
         connectedBlocksInput = [None] * inputSize
         connectedBlocksOutput = [None] * outputSize
@@ -82,3 +89,42 @@ class SimpleBlockElement(QObject):
     @Slot(float, float)
     def onDrag(self, x, y):
         print(f"Block {self._blockId} dragged to position ({x}, {y})")
+        self._x = x
+        self._y = y
+
+    @Property(int, notify=positionChanged)
+    def x(self):
+        return self._x
+    @x.setter
+    def x(self, value):
+        if self._x != value:
+            self._x = value
+            self.positionChanged.emit(self._x, self._y)
+
+    @Property(int, notify=positionChanged)
+    def y(self):
+        return self._y
+    @y.setter
+    def y(self, value):
+        if self._y != value:
+            self._y = value
+            self.positionChanged.emit(self._x, self._y)
+
+    @Property(float, notify=onWidthChanged)
+    def width(self):
+        return self._width
+    @width.setter
+    def width(self, value):
+        if value < 0:
+            raise ValueError("Width cannot be negative.")
+        if self._width != value:
+            self._width = value
+    @Property(float, notify=onHeightChanged)
+    def height(self):
+        return self._height
+    @height.setter
+    def height(self, value):
+        if value < 0:
+            raise ValueError("Height cannot be negative.")
+        if self._height != value:
+            self._height = value

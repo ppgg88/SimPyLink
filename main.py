@@ -4,6 +4,7 @@ from pathlib import Path
 import sys
 
 from widgets.simpleBlockElement import SimpleBlockElement
+from app.blockLogic import BlockLogic
 
 QML_FOLDER = Path(__file__).resolve().parent / "qml"
 
@@ -11,13 +12,9 @@ if __name__ == "__main__":
     app = QGuiApplication(sys.argv)
     engine = QQmlApplicationEngine()
 
-    elements = [
-        SimpleBlockElement("Block 1", "blue"),
-        SimpleBlockElement("Block 2", "green", 1, 2),
-        SimpleBlockElement("Block 3", "red", 3, 1)
-    ]
+    logic = BlockLogic()
 
-    engine.rootContext().setContextProperty("simpleElements", elements)
+    engine.rootContext().setContextProperty("simpleElements", logic.toList())
 
     # Charger le fichier QML principal
     qml_file = QML_FOLDER / "main.qml"

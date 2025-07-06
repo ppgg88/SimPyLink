@@ -8,9 +8,24 @@ Item {
     property var connections: []
     property string blockId: elementModel.blockId
 
+    onElementModelChanged: {
+        if (elementModel) {
+            console.log("elementModel is defined:", elementModel);
+            blockId = elementModel.blockId;  // Mettre à jour blockId
+
+            // Appeler une méthode de elementModel si nécessaire
+            if (typeof elementModel.onDrag === "function") {
+                elementModel.onDrag(item.x + draggable.x, item.y + draggable.y);
+                elementModel.onWidthChanged(draggable.implicitWidth);
+                elementModel.onHeightChanged(draggable.implicitHeight);
+                console.log("Block", elementModel.blockId, "dragged to position (", draggable.parent.x + draggable.x, ",", draggable.parent.y + draggable.y, ")");
+            }
+        }
+    }
+
     Rectangle {
         id: draggable
-        implicitWidth: textElement.width + 20  // Ajoute une marge autour du texte
+        implicitWidth: textElement.width + 20
         implicitHeight:  Math.max(elementModel.inputSize, elementModel.outputSize) * 50
         color: elementModel.color
 
@@ -35,8 +50,8 @@ Item {
                     anchors.fill: parent
                     onClicked: {
                         console.log("Input clicked at index:", index);
-                        // Déclencher un signal pour commencer une connexion
-                        blockContainer.startConnection(draggable.parent.x+parent.x+draggable.x+5, draggable.parent.y+parent.y+draggable.y+5);
+                        //blockContainer.startConnection(draggable.parent.x+parent.x+draggable.x+5, draggable.parent.y+parent.y+draggable.y+5);
+                        blockContainer.startConnection(elementModel, index)
                     }
                 }
             }
@@ -56,7 +71,8 @@ Item {
                     onClicked: {
                         console.log("Output clicked at index:", index);
                         // Déclencher un signal pour terminer une connexion
-                        blockContainer.endConnection(draggable.parent.x+parent.x+draggable.x+5, draggable.parent.y+parent.y+draggable.y+5);
+                        //blockContainer.endConnection(draggable.parent.x+parent.x+draggable.x+5, draggable.parent.y+parent.y+draggable.y+5, elementModel.blockId, index);
+                        blockContainer.endConnection(elementModel, index)
                     }
                 }
             }
@@ -68,9 +84,11 @@ Item {
             drag.target: draggable
             onReleased: {
                 if (elementModel && elementModel.onDrag) {
-                    elementModel.onDrag(parent.x, parent.y);
+                    elementModel.onDrag(draggable.parent.x+draggable.x, draggable.parent.y+draggable.y);
+                    connectionCanvas.requestPaint();
                 }
             }
         }
+
     }
 }
