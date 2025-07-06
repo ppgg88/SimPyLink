@@ -1,0 +1,76 @@
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+
+Item {
+    id: simpleBlockElement
+
+    property var elementModel
+    property var connections: []
+    property string blockId: elementModel.blockId
+
+    Rectangle {
+        id: draggable
+        implicitWidth: textElement.width + 20  // Ajoute une marge autour du texte
+        implicitHeight:  Math.max(elementModel.inputSize, elementModel.outputSize) * 50
+        color: elementModel.color
+
+        Text {
+            id: textElement
+            anchors.centerIn: parent
+            text: qsTr(elementModel.text)
+            color: "white"
+        }
+
+        // Input
+        Repeater {
+            model: elementModel.inputSize
+            Rectangle {
+                width: 10
+                height: 10
+                color: "black"
+                anchors.right: parent.left
+                y: index * 50 + 20 + (Math.max(elementModel.inputSize, elementModel.outputSize)-elementModel.inputSize)*25
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        console.log("Input clicked at index:", index);
+                        // Déclencher un signal pour commencer une connexion
+                        blockContainer.startConnection(draggable.parent.x+parent.x+draggable.x+5, draggable.parent.y+parent.y+draggable.y+5);
+                    }
+                }
+            }
+        }
+
+        // Output
+        Repeater {
+            model: elementModel.outputSize
+            Rectangle {
+                width: 10
+                height: 10
+                color: "black"
+                anchors.left: parent.right
+                y: index * 50 + 20 + (Math.max(elementModel.inputSize, elementModel.outputSize)-elementModel.outputSize)*25
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        console.log("Output clicked at index:", index);
+                        // Déclencher un signal pour terminer une connexion
+                        blockContainer.endConnection(draggable.parent.x+parent.x+draggable.x+5, draggable.parent.y+parent.y+draggable.y+5);
+                    }
+                }
+            }
+        }
+
+        MouseArea {
+            id: dragArea
+            anchors.fill: parent
+            drag.target: draggable
+            onReleased: {
+                if (elementModel && elementModel.onDrag) {
+                    elementModel.onDrag(parent.x, parent.y);
+                }
+            }
+        }
+    }
+}

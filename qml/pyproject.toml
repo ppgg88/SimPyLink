@@ -1,0 +1,10 @@
+[project]
+name = "PySide"
+
+[tool.pyside6-project]
+files = [
+    "main.py",
+    "main.qml",
+    "elements/simpleBlockElement.qml"
+    "elements/topMenu.qml"
+]
